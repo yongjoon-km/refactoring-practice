@@ -1,8 +1,6 @@
 function statement(invoice, plays) {
 
-  function playFor(aPerformance) {
-    return plays[aPerformance.playID]
-  }
+  return renderToText(invoice.customer, usd(getTotalAmount()), volumeCredits(), performancesResult())
 
   function getTotalAmount() {
     let result = 0;
@@ -10,6 +8,10 @@ function statement(invoice, plays) {
       result += getThisAmountByType(playFor(perf).type, perf);
     }
     return result;
+  }
+
+  function playFor(aPerformance) {
+    return plays[aPerformance.playID]
   }
 
   function volumeCredits() {
@@ -20,20 +22,28 @@ function statement(invoice, plays) {
     return result
   }
 
-  function getResultOf(invoice) {
-    let result = `Invoice (Customer: ${invoice.customer})\n`;
+  function performancesResult() {
+
+    const performancesResult = []
     for (let perf of invoice.performances) {
-      result += ` ${playFor(perf).name}: ${usd(getThisAmountByType(playFor(perf).type, perf))} (${perf.audience} seats)\n`;
+      performancesResult.push({ label: playFor(perf).name, amount: usd(getThisAmountByType(playFor(perf).type, perf)), seats: perf.audience })
     }
-    return result;
+
+    return performancesResult;
   }
 
-  let result = getResultOf(invoice) 
-  result += `totalAmount: ${usd(getTotalAmount())}\n`;
-  result += `points: ${volumeCredits()} points\n`;
-  return result;
 }
 
+function renderToText(customer, totalAmount, volumeCredits, perfResults) {
+
+  let result = `Invoice (Customer: ${customer})\n`;
+  for (let { label, amount, seats } of perfResults) {
+    result += ` ${label}: ${amount} (${seats} seats)\n`;
+  }
+  result += `totalAmount: ${totalAmount}\n`;
+  result += `points: ${volumeCredits} points\n`;
+  return result;
+}
 
 function getVolumeCredits(play, perf) {
 
