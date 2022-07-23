@@ -1,7 +1,9 @@
 function statement(invoice, plays) {
 
-  return renderToText(invoice.customer, usd(getTotalAmount()), volumeCredits(), performancesResult())
+  return renderToText(generateReport(invoice, plays))
+}
 
+function generateReport(invoice, plays) {
   function getTotalAmount() {
     let result = 0;
     for (let perf of invoice.performances) {
@@ -31,17 +33,23 @@ function statement(invoice, plays) {
 
     return performancesResult;
   }
-
+  return {
+    customer: invoice.customer,
+    totalAmount: usd(getTotalAmount()),
+    volumeCredits: volumeCredits(),
+    performanceReports: performancesResult()
+  }
 }
 
-function renderToText(customer, totalAmount, volumeCredits, perfResults) {
 
-  let result = `Invoice (Customer: ${customer})\n`;
-  for (let { label, amount, seats } of perfResults) {
+function renderToText(report) {
+
+  let result = `Invoice (Customer: ${report.customer})\n`;
+  for (let { label, amount, seats } of report.performanceReports) {
     result += ` ${label}: ${amount} (${seats} seats)\n`;
   }
-  result += `totalAmount: ${totalAmount}\n`;
-  result += `points: ${volumeCredits} points\n`;
+  result += `totalAmount: ${report.totalAmount}\n`;
+  result += `points: ${report.volumeCredits} points\n`;
   return result;
 }
 
