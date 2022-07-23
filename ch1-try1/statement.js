@@ -3,6 +3,11 @@ function statement(invoice, plays) {
   return renderToText(generateReport(invoice, plays))
 }
 
+function statementInHtml(invoice, plays) {
+
+  return renderToHtml(generateReport(invoice, plays))
+}
+
 function generateReport(invoice, plays) {
   function getTotalAmount() {
     let result = 0;
@@ -53,6 +58,19 @@ function renderToText(report) {
   return result;
 }
 
+function renderToHtml(report) {
+
+  let result = `<ul>`
+  result += `<li>Invoice (Customer: ${report.customer})</li>`;
+  for (let { label, amount, seats } of report.performanceReports) {
+    result += `<li>${label}: ${amount} (${seats} seats)</li>`;
+  }
+  result += `<li>totalAmount: ${report.totalAmount}</li>`;
+  result += `<li>points: ${report.volumeCredits} points</li>`;
+  result += `</ul>`
+  return result;
+}
+
 function getVolumeCredits(play, perf) {
 
   let result = 0;
@@ -90,4 +108,4 @@ function getThisAmountByType(playType, perf) {
   return result;
 }
 
-module.exports = statement
+module.exports = {statement, statementInHtml}
