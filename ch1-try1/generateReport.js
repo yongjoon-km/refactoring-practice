@@ -3,7 +3,7 @@ function generateReport(invoice, plays) {
   const performances = invoice.performances.map(convertPerformance)
   return {
     customer: invoice.customer,
-    totalAmount: usd(getTotalAmount()),
+    totalAmount: usd(totalAmount()),
     volumeCredits: volumeCredits(),
     performanceReports: performancesResult()
   }
@@ -28,7 +28,7 @@ function generateReport(invoice, plays) {
     }
   }
 
-  function getTotalAmount() {
+  function totalAmount() {
     return performances.reduce((total, p) => total + p.totalAmount, 0)
   }
 
@@ -95,12 +95,7 @@ class ComedyCalculator extends PerformanceCalculator {
   }
 
   get volumeCredits() {
-    let result = 0;
-
-    result += super.volumeCredits
-    result += Math.floor(this.perf.audience / 5);
-
-    return result;
+    return super.volumeCredits + Math.floor(this.perf.audience / 5);
   }
 
 }
