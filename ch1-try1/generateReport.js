@@ -1,5 +1,6 @@
 function generateReport(invoice, plays) {
 
+  const performances = invoice.performances.map(convertPerformance)
   return {
     customer: invoice.customer,
     totalAmount: usd(getTotalAmount()),
@@ -7,6 +8,14 @@ function generateReport(invoice, plays) {
     performanceReports: performancesResult()
   }
 
+  function convertPerformance(aPerformance) {
+    const calculator = createCalculator(aPerformance)
+    return {
+      totalAmount: calculator.amount,
+      volumeCredit: calculator.volumeCredits,
+      performanceResult: { label: playFor(aPerformance).name, amount: usd(calculator.amount), seats: aPerformance.audience }
+    };
+  }
 
   function createCalculator(perf) {
     switch (playFor(perf).type) {
@@ -20,12 +29,7 @@ function generateReport(invoice, plays) {
   }
 
   function getTotalAmount() {
-    let result = 0;
-    for (let perf of invoice.performances) {
-      const calculator = createCalculator(perf)
-      result += calculator.amount;
-    }
-    return result;
+    return performances.reduce((total, p) => total + p.totalAmount, 0)
   }
 
   function playFor(aPerformance) {
@@ -34,23 +38,11 @@ function generateReport(invoice, plays) {
   }
 
   function volumeCredits() {
-    let result = 0
-    for (let perf of invoice.performances) {
-      const calculator = createCalculator(perf)
-      result += calculator.volumeCredits
-    }
-    return result
+    return performances.reduce((total, p) => total + p.volumeCredit, 0);
   }
 
   function performancesResult() {
-
-    const performancesResult = []
-    for (let perf of invoice.performances) {
-      const calculator = createCalculator(perf)
-      performancesResult.push({ label: playFor(perf).name, amount: usd(calculator.amount), seats: perf.audience })
-    }
-
-    return performancesResult;
+    return performances.map(p => p.performanceResult);
   }
 }
 
