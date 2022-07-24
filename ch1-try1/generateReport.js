@@ -1,20 +1,43 @@
 function generateReport(invoice, plays) {
+
+  return {
+    customer: invoice.customer,
+    totalAmount: usd(getTotalAmount()),
+    volumeCredits: volumeCredits(),
+    performanceReports: performancesResult()
+  }
+
+
+  function createCalculator(perf) {
+    switch (playFor(perf).type) {
+      case "tragedy":
+        return new TragedyCalculator(playFor(perf).type, perf);
+      case "comedy":
+        return new ComedyCalculator(playFor(perf).type, perf);
+      default:
+        throw "Now known calculator"
+    }
+  }
+
   function getTotalAmount() {
     let result = 0;
     for (let perf of invoice.performances) {
-      result += getThisAmountByType(playFor(perf).type, perf);
+      const calculator = createCalculator(perf)
+      result += calculator.amount;
     }
     return result;
   }
 
   function playFor(aPerformance) {
+
     return plays[aPerformance.playID]
   }
 
   function volumeCredits() {
     let result = 0
     for (let perf of invoice.performances) {
-      result += getVolumeCredits(playFor(perf), perf)
+      const calculator = createCalculator(perf)
+      result += calculator.volumeCredits
     }
     return result
   }
@@ -23,27 +46,12 @@ function generateReport(invoice, plays) {
 
     const performancesResult = []
     for (let perf of invoice.performances) {
-      performancesResult.push({ label: playFor(perf).name, amount: usd(getThisAmountByType(playFor(perf).type, perf)), seats: perf.audience })
+      const calculator = createCalculator(perf)
+      performancesResult.push({ label: playFor(perf).name, amount: usd(calculator.amount), seats: perf.audience })
     }
 
     return performancesResult;
   }
-  return {
-    customer: invoice.customer,
-    totalAmount: usd(getTotalAmount()),
-    volumeCredits: volumeCredits(),
-    performanceReports: performancesResult()
-  }
-}
-
-function getVolumeCredits(play, perf) {
-
-  let result = 0;
-
-  result += Math.max(perf.audience - 30, 0);
-  if ("comedy" === play.type) result += Math.floor(perf.audience / 5);
-
-  return result;
 }
 
 function usd(amount) {
@@ -51,26 +59,58 @@ function usd(amount) {
     .format(amount / 100);
 }
 
-function getThisAmountByType(playType, perf) {
-  let result = 0;
-  switch (playType) {
-    case "tragedy":
-      result = 40000;
-      if (perf.audience > 30) {
-        result += 1000 * (perf.audience - 30);
-      }
-      break;
-    case "comedy":
-      result = 30000;
-      if (perf.audience > 20) {
-        result += 10000 + 500 * (perf.audience - 20);
-      }
-      result += 300 * perf.audience;
-      break;
-    default:
-      throw new Error(`unknown genre: ${play.type}`);
+class PerformanceCalculator {
+
+  constructor(playType, perf) {
+    this.playType = playType;
+    this.perf = perf
   }
-  return result;
+
+  get amount() {
+    throw new Error(`This method is implemented in sub classes`);
+  }
+
+  get volumeCredits() {
+    return Math.max(this.perf.audience - 30, 0);
+  }
+}
+
+class TragedyCalculator extends PerformanceCalculator {
+
+  get amount() {
+    let result = 0;
+    result = 40000;
+    if (this.perf.audience > 30) {
+      result += 1000 * (this.perf.audience - 30);
+    }
+    return result;
+  }
+
+  get volumeCredits() {
+    return super.volumeCredits
+  }
+}
+
+class ComedyCalculator extends PerformanceCalculator {
+
+  get amount() {
+    let result = 30000;
+    if (this.perf.audience > 20) {
+      result += 10000 + 500 * (this.perf.audience - 20);
+    }
+    result += 300 * this.perf.audience;
+    return result;
+  }
+
+  get volumeCredits() {
+    let result = 0;
+
+    result += super.volumeCredits
+    result += Math.floor(this.perf.audience / 5);
+
+    return result;
+  }
+
 }
 
 module.exports = generateReport
