@@ -3,18 +3,30 @@ function convert(yamlText) {
 
   let result = "{"
   let prevRowIndent = 0;
+  let closeBracketStack = []
   const BASE_PADDING = 2;
   for (let textLine of yamlTextLines) {
     if (!textLine) {
-      result += `${separator('')}${padding(prevRowIndent)}}\n`
+      for (let bracket of closeBracketStack.reverse()) {
+        result += `\n${bracket}`
+      }
       break;
     }
     const [key, value] = textLine.split(':')
     result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}"${jsonText(key)}": `
-    result += `${!!value ? jsonText(value) : '{'}`
+    if (!!value) {
+      result += `${jsonText(value)}`
+    } else {
+      if (indentOf(key) < prevRowIndent) {
+        result += `\n${closeBracketStack.pop()}`
+      }
+      result += `${'{'}`
+      closeBracketStack.push(`${padding(indentOf(key) + BASE_PADDING)}}`)
+    }
     prevRowIndent = indentOf(key)
   }
-  result += "}\n"
+  result += "\n}\n"
+  console.log(result)
   return result
 
   function separator(key) {
