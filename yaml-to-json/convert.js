@@ -13,24 +13,23 @@ function convert(yamlText) {
       break;
     }
     const [key, value] = textLine.split(':')
+    if (indentOf(key) < prevRowIndent) {
+      result += `\n${closeBracketStack.pop()}`
+    }
     result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}"${jsonText(key)}": `
     if (!!value) {
       result += `${jsonText(value)}`
     } else {
-      if (indentOf(key) < prevRowIndent) {
-        result += `\n${closeBracketStack.pop()}`
-      }
-      result += `${'{'}`
+      result += `{`
       closeBracketStack.push(`${padding(indentOf(key) + BASE_PADDING)}}`)
     }
     prevRowIndent = indentOf(key)
   }
   result += "\n}\n"
-  console.log(result)
   return result
 
   function separator(key) {
-    if (indentOf(key) === prevRowIndent) {
+    if (indentOf(key) <= prevRowIndent && prevRowIndent !== 0) {
       return ',\n'
     } else {
       return '\n'

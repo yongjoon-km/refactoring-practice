@@ -1,0 +1,6 @@
+application:
+  host: 'www.example.com'
+  port: 443
+  description:
+    name: 'bucket server'
+  ttl: 60
