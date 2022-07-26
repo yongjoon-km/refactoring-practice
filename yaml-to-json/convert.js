@@ -7,21 +7,19 @@ function convert(yamlText) {
   const BASE_PADDING = 2;
   for (let textLine of yamlTextLines) {
     if (!textLine) {
-      for (let bracket of closeBracketStack.reverse()) {
-        result += `\n${bracket}`
-      }
+      closeBracketStack.reverse().forEach(bracket => result += bracket)
       break;
     }
     const [key, value] = textLine.split(':')
     if (indentOf(key) < prevRowIndent) {
-      result += `\n${closeBracketStack.pop()}`
+      result += closeBracketStack.pop()
     }
     result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}"${jsonText(key)}": `
     if (!!value) {
       result += `${jsonText(value)}`
     } else {
       result += `{`
-      closeBracketStack.push(`${padding(indentOf(key) + BASE_PADDING)}}`)
+      closeBracketStack.push(`\n${padding(indentOf(key) + BASE_PADDING)}}`)
     }
     prevRowIndent = indentOf(key)
   }
