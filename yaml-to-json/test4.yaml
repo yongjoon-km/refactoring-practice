@@ -1,0 +1,8 @@
+application:
+  host: 'www.example.com'
+  port: 443
+  description:
+    name:
+      origin: 'bob'
+      ttl: 123
+  ttl: 60

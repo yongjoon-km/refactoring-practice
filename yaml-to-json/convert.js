@@ -12,7 +12,10 @@ function convert(yamlText) {
     }
     const [key, value] = textLine.split(':')
     if (indentOf(key) < prevRowIndent) {
-      result += closeBracketStack.pop()
+      console.log(key, value)
+      for (let i = 0; i < (prevRowIndent - indentOf(key)) / 2; i++) {
+        result += closeBracketStack.pop()
+      }
     }
     result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}"${jsonText(key)}": `
     if (!!value) {
@@ -24,6 +27,7 @@ function convert(yamlText) {
     prevRowIndent = indentOf(key)
   }
   result += "\n}\n"
+  console.log(result)
   return result
 
   function separator(key) {
