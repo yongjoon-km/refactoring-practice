@@ -62,3 +62,20 @@ test('it should convert nested depth yaml to json', () => {
 }
 `)
 })
+
+test('it should process to list in yaml', () => {
+  const yaml = fs.readFileSync(`${__dirname}/test5.yaml`, 'utf-8');
+  expect(convert(yaml)).toBe(
+`{
+  "application": {
+    "host": "www.example.com",
+    "port": [
+      443,
+      80
+    ],
+    "name": "bob"
+  }
+}
+`)
+})
+

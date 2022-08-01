@@ -1,0 +1,6 @@
+application:
+  host: 'www.example.com'
+  port:
+    - 443
+    - 80
+  name: 'bob'

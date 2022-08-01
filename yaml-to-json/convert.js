@@ -5,14 +5,27 @@ function convert(yamlText) {
   let prevRowIndent = 0;
   let closeBracketStack = []
   const BASE_PADDING = 2;
+  let listFlag = false;
   for (let textLine of yamlTextLines) {
     if (!textLine) {
       closeBracketStack.reverse().forEach(bracket => result += bracket)
       break;
     }
     const [key, value] = textLine.split(':')
+    if (key[indentOf(key)] === '-') {
+      if (listFlag === false) {
+        result = result.slice(0, result.length - 1)
+        result += `[`
+        listFlag = true
+        closeBracketStack.pop()
+        closeBracketStack.push(`\n${padding(indentOf(key))}]`)
+      }
+      listElement = key.split('-')[1]
+      result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}${jsonText(listElement)}`
+      prevRowIndent = indentOf(key)
+      continue;
+    }
     if (indentOf(key) < prevRowIndent) {
-      console.log(key, value)
       for (let i = 0; i < (prevRowIndent - indentOf(key)) / 2; i++) {
         result += closeBracketStack.pop()
       }
@@ -27,7 +40,6 @@ function convert(yamlText) {
     prevRowIndent = indentOf(key)
   }
   result += "\n}\n"
-  console.log(result)
   return result
 
   function separator(key) {
