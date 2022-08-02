@@ -79,3 +79,29 @@ test('it should process to list in yaml', () => {
 `)
 })
 
+test('transform object list', () => {
+  const yaml = fs.readFileSync(`${__dirname}/test6.yaml`, 'utf-8');
+  expect(convert(yaml)).toBe(
+`{
+  "application": {
+    "host": "www.example.com",
+    "port": [
+      443,
+      80
+    ],
+    "name": "bob",
+    "servers": [
+      {
+        "host": "image.example.com",
+        "port": 443
+      },
+      {
+        "host": "video.example.com",
+        "port": 80
+      }
+    ]
+  }
+}
+`)
+})
+

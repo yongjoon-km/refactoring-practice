@@ -1,0 +1,11 @@
+application:
+  host: 'www.example.com'
+  port:
+    - 443
+    - 80
+  name: 'bob'
+  servers:
+    - host: 'image.example.com'
+      port: 443
+    - host: 'video.example.com'
+      port: 80
