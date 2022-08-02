@@ -6,12 +6,16 @@ function convert(yamlText) {
   let closeBracketStack = []
   const BASE_PADDING = 2;
   let listFlag = false;
+  let keyValueList = []
+
   for (let textLine of yamlTextLines) {
     if (!textLine) {
       break;
     }
+    keyValueList.push(textLine.split(':'))
+  }
 
-    const [key, value] = textLine.split(':')
+  for (let [key, value] of keyValueList) {
 
     if (key[indentOf(key)] === '-') {
       if (listFlag === false) {
