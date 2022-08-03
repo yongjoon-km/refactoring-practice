@@ -1,5 +1,3 @@
-const BASE_PADDING = 2;
-
 function convert(yamlText) {
   const yamlTextLines = yamlText.split('\n')
 
