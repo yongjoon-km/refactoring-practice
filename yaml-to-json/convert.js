@@ -16,13 +16,13 @@ function convert(yamlText) {
     if (!!value) {
       converter.addValue(value)
     } else {
-      converter.openBracketFor(key)
+      converter.openBracketFor()
     }
     converter.prevRowIndent = indentOf(key)
   }
 
   converter.flushRemainedBrackets()
-  converter.result += "\n}\n"
+  converter.result += "}"
   return converter.result
 }
 
@@ -40,10 +40,10 @@ class Converter {
       this.result += `[`
       this.listFlag = true
       this.closeBracketStack.pop()
-      this.closeBracketStack.push(`\n${padding(indentOf(key))}]`)
+      this.closeBracketStack.push(`]`)
     }
     const listElement = key.split('-')[1]
-    this.result += `${this.separator(key)}${padding(indentOf(key) + BASE_PADDING)}${jsonText(listElement)}`
+    this.result += `${this.separator(key)}${jsonText(listElement)}`
     this.prevRowIndent = indentOf(key)
   }
 
@@ -56,16 +56,16 @@ class Converter {
   }
 
   addKey(key) {
-    this.result += `${this.separator(key)}${padding(indentOf(key) + BASE_PADDING)}"${jsonText(key)}": `
+    this.result += `${this.separator(key)}"${jsonText(key)}": `
   }
 
   addValue(value) {
     this.result += `${jsonText(value)}`
   }
 
-  openBracketFor(key) {
+  openBracketFor() {
     this.result += `{`
-    this.closeBracketStack.push(`\n${padding(indentOf(key) + BASE_PADDING)}}`)
+    this.closeBracketStack.push(`}`)
   }
 
   flushRemainedBrackets() {
@@ -74,9 +74,9 @@ class Converter {
 
   separator(key) {
     if (indentOf(key) <= this.prevRowIndent && this.prevRowIndent !== 0) {
-      return ',\n'
+      return ','
     } else {
-      return '\n'
+      return ''
     }
   }
 }
@@ -111,14 +111,6 @@ function indentOf(text) {
     }
   }
   return result
-}
-
-function padding(paddingCount) {
-  let result = ""
-  for (let i = 0; i < paddingCount; i++) {
-    result += " "
-  }
-  return result;
 }
 
 module.exports = convert
