@@ -1,55 +1,61 @@
 function convert(yamlText) {
   const yamlTextLines = yamlText.split('\n')
 
-  let result = "{"
-  let prevRowIndent = 0;
-  let closeBracketStack = []
   const BASE_PADDING = 2;
-  let listFlag = false;
+  const converter = new Converter()
 
   for (let [key, value] of parse(yamlTextLines)) {
 
     if (key[indentOf(key)] === '-') {
-      if (listFlag === false) {
-        result = result.slice(0, result.length - 1)
-        result += `[`
-        listFlag = true
-        closeBracketStack.pop()
-        closeBracketStack.push(`\n${padding(indentOf(key))}]`)
+      if (converter.listFlag === false) {
+        converter.result = converter.result.slice(0, converter.result.length - 1)
+        converter.result += `[`
+        converter.listFlag = true
+        converter.closeBracketStack.pop()
+        converter.closeBracketStack.push(`\n${padding(indentOf(key))}]`)
       }
       listElement = key.split('-')[1]
-      result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}${jsonText(listElement)}`
-      prevRowIndent = indentOf(key)
+      converter.result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}${jsonText(listElement)}`
+      converter.prevRowIndent = indentOf(key)
       continue;
     }
 
-    if (indentOf(key) < prevRowIndent) {
-      for (let i = 0; i < (prevRowIndent - indentOf(key)) / 2; i++) {
-        result += closeBracketStack.pop()
+    if (indentOf(key) < converter.prevRowIndent) {
+      for (let i = 0; i < (converter.prevRowIndent - indentOf(key)) / 2; i++) {
+        converter.result += converter.closeBracketStack.pop()
       }
     }
 
-    result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}"${jsonText(key)}": `
+    converter.result += `${separator(key)}${padding(indentOf(key) + BASE_PADDING)}"${jsonText(key)}": `
     if (!!value) {
-      result += `${jsonText(value)}`
+      converter.result += `${jsonText(value)}`
     } else {
-      result += `{`
-      closeBracketStack.push(`\n${padding(indentOf(key) + BASE_PADDING)}}`)
+      converter.result += `{`
+      converter.closeBracketStack.push(`\n${padding(indentOf(key) + BASE_PADDING)}}`)
     }
-    prevRowIndent = indentOf(key)
+    converter.prevRowIndent = indentOf(key)
   }
 
-  closeBracketStack.reverse().forEach(bracket => result += bracket)
-  result += "\n}\n"
-  return result
+  converter.closeBracketStack.reverse().forEach(bracket => converter.result += bracket)
+  converter.result += "\n}\n"
+  return converter.result
 
   function separator(key) {
-    if (indentOf(key) <= prevRowIndent && prevRowIndent !== 0) {
+    if (indentOf(key) <= converter.prevRowIndent && converter.prevRowIndent !== 0) {
       return ',\n'
     } else {
       return '\n'
     }
   }
+}
+
+class Converter {
+  result = "{"
+  prevRowIndent = 0
+  closeBracketStack = []
+  listFlag = false
+
+  constructor() { }
 }
 
 function parse(yamlTextLines) {
