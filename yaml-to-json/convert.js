@@ -1,23 +1,41 @@
+
+class Node {
+  type = ""
+  value = ""
+  children = []
+
+  constructor(type) {
+    this.type = type
+  }
+
+  addChild(node) {
+    this.children.push(node)
+  }
+
+}
+
 function convert(yamlText) {
   const yamlTextLines = yamlText.split('\n')
 
   const converter = new Converter()
-
-  for (let [key, value] of parse(yamlTextLines)) {
-
-    if (key[indentOf(key)] === '-') {
-      converter.addListElement(key)
-      if (!!value) {
-        convertObject(key.split('-')[1], value)
-      }
-      continue;
-    }
-    convertObject(key, value)
-  }
-
+  convertRecursive(converter)
   converter.flushRemainedBrackets()
   converter.result += "}"
   return converter.result
+
+  function convertRecursive(converter) {
+    for (let [type, key, value] of parse(yamlTextLines)) {
+      if (type === 'List') {
+        converter.addListElement(key)
+        if (!!value) {
+          convertObject(key.split('-')[1], value)
+        }
+        continue;
+      }
+      convertObject(key, value)
+    }
+  }
+
 
   function convertObject(key, value) {
     converter.flushBracketsFor(key)
@@ -90,10 +108,14 @@ class Converter {
 function parse(yamlTextLines) {
   let result = []
   for (let textLine of yamlTextLines) {
+    let elements = [""]
     if (!textLine) {
       break;
     }
-    result.push(textLine.split(':'))
+    if (textLine.trim().startsWith('-')) {
+      elements[0] = 'List'
+    }
+    result.push(elements.concat(textLine.split(':')))
   }
   return result
 }
