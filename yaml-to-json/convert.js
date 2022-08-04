@@ -9,6 +9,14 @@ function convert(yamlText) {
       converter.addListElement(key)
       continue;
     }
+    convertObject(key, value)
+  }
+
+  converter.flushRemainedBrackets()
+  converter.result += "}"
+  return converter.result
+
+  function convertObject(key, value) {
     converter.flushBracketsFor(key)
     converter.addKey(key)
     if (!!value) {
@@ -18,10 +26,6 @@ function convert(yamlText) {
     }
     converter.prevRowIndent = indentOf(key)
   }
-
-  converter.flushRemainedBrackets()
-  converter.result += "}"
-  return converter.result
 }
 
 class Converter {
