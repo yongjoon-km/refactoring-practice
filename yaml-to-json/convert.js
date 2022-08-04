@@ -7,6 +7,9 @@ function convert(yamlText) {
 
     if (key[indentOf(key)] === '-') {
       converter.addListElement(key)
+      if (!!value) {
+        convertObject(key.split('-')[1], value)
+      }
       continue;
     }
     convertObject(key, value)
@@ -66,6 +69,7 @@ class Converter {
   }
 
   openBracketFor() {
+    this.listFlag = false
     this.result += `{`
     this.closeBracketStack.push(`}`)
   }
