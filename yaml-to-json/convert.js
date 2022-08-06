@@ -33,7 +33,7 @@ function convert(yamlText) {
         }
         continue;
       }
-      if (!converter.shouldFlush) {
+      if (!converter.parsingObjectList) {
         converter.listFlag = false
       }
       convertObject(key, value)
@@ -58,7 +58,7 @@ class Converter {
   prevRowIndent = 0
   closeBracketStack = []
   listFlag = false
-  shouldFlush = false
+  parsingObjectList = false
   firstObject = false
 
   constructor() { }
@@ -72,12 +72,12 @@ class Converter {
       this.closeBracketStack.push(`]`)
     }
     if (!value) {
-      this.shouldFlush = false
+      this.parsingObjectList = false
       const listElement = key.split('-')[1]
       this.result += `${this.separator(key)}${jsonText(listElement)}`
       this.prevRowIndent = indentOf(key)
     } else {
-      if (this.shouldFlush) {
+      if (this.parsingObjectList) {
         this.result += this.closeBracketStack.pop()
       }
       if (!this.firstObject) {
@@ -85,7 +85,7 @@ class Converter {
       }
       this.result += '{'
       this.closeBracketStack.push('}')
-      this.shouldFlush = true
+      this.parsingObjectList = true
       this.prevRowIndent -= 2
     }
   }
@@ -126,7 +126,7 @@ class Converter {
   }
 
   separator(key) {
-    if (this.shouldFlush && !this.firstObject) {
+    if (this.parsingObjectList && !this.firstObject) {
       if (indentOf(key) > this.prevRowIndent) {
         return ',';
       }

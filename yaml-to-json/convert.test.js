@@ -97,6 +97,10 @@ test('transform object list', () => {
           {
             "host": "video.example.com",
             "port": 80
+          },
+          {
+            "host": "audio.example.com",
+            "port": 1234
           }
         ]
       }

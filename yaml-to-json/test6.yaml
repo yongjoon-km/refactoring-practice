@@ -9,3 +9,5 @@ application:
       port: 443
     - host: 'video.example.com'
       port: 80
+    - host: 'audio.example.com'
+      port: 1234
