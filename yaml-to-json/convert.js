@@ -21,16 +21,20 @@ function convert(yamlText) {
   convert()
   converter.flushRemainedBrackets()
   converter.result += "}"
+  console.log(converter.result)
   return converter.result
 
   function convert() {
     for (let [type, key, value] of parse(yamlTextLines)) {
       if (type === 'List') {
-        converter.addListElement(key)
+        converter.addListElement(key, value)
         if (!!value) {
           convertObject(key.split('-')[1], value)
         }
         continue;
+      }
+      if (!converter.shouldFlush) {
+        converter.listFlag = false
       }
       convertObject(key, value)
     }
@@ -54,10 +58,12 @@ class Converter {
   prevRowIndent = 0
   closeBracketStack = []
   listFlag = false
+  shouldFlush = false
+  firstObject = false
 
   constructor() { }
 
-  addListElement(key) {
+  addListElement(key, value) {
     if (this.listFlag === false) {
       this.result = this.result.slice(0, this.result.length - 1)
       this.result += `[`
@@ -65,12 +71,32 @@ class Converter {
       this.closeBracketStack.pop()
       this.closeBracketStack.push(`]`)
     }
-    const listElement = key.split('-')[1]
-    this.result += `${this.separator(key)}${jsonText(listElement)}`
-    this.prevRowIndent = indentOf(key)
+    if (!value) {
+      this.shouldFlush = false
+      const listElement = key.split('-')[1]
+      this.result += `${this.separator(key)}${jsonText(listElement)}`
+      this.prevRowIndent = indentOf(key)
+    } else {
+      if (this.shouldFlush) {
+        this.result += this.closeBracketStack.pop()
+      }
+      if (!this.firstObject) {
+        this.result += ','
+      }
+      this.result += '{'
+      this.closeBracketStack.push('}')
+      this.shouldFlush = true
+      this.prevRowIndent -= 2
+    }
   }
 
   flushBracketsFor(key) {
+    if (this.shoudlFlush) {
+      return
+    }
+    if (this.listFlag) {
+      return
+    }
     if (indentOf(key) < this.prevRowIndent) {
       for (let i = 0; i < (this.prevRowIndent - indentOf(key)) / 2; i++) {
         this.result += this.closeBracketStack.pop()
@@ -80,16 +106,19 @@ class Converter {
 
   addKey(key) {
     this.result += `${this.separator(key)}"${jsonText(key)}": `
+    this.firstObject = false
   }
 
   addValue(value) {
     this.result += `${jsonText(value)}`
+    this.firstObject = false
   }
 
   openBracketFor() {
     this.listFlag = false
     this.result += `{`
     this.closeBracketStack.push(`}`)
+    this.firstObject = true
   }
 
   flushRemainedBrackets() {
@@ -97,6 +126,12 @@ class Converter {
   }
 
   separator(key) {
+    if (this.shouldFlush && !this.firstObject) {
+      if (indentOf(key) > this.prevRowIndent) {
+        return ',';
+      }
+      return ''
+    }
     if (indentOf(key) <= this.prevRowIndent && this.prevRowIndent !== 0) {
       return ','
     } else {
