@@ -18,12 +18,12 @@ function convert(yamlText) {
   const yamlTextLines = yamlText.split('\n')
 
   const converter = new Converter()
-  convertRecursive(converter)
+  convert()
   converter.flushRemainedBrackets()
   converter.result += "}"
   return converter.result
 
-  function convertRecursive(converter) {
+  function convert() {
     for (let [type, key, value] of parse(yamlTextLines)) {
       if (type === 'List') {
         converter.addListElement(key)
